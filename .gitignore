@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
-# playground
+# Workspace settings
+.vscode/
+
+# Playground
 scripts/

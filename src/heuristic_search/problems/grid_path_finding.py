@@ -3,7 +3,7 @@ from typing import Any, Callable, Iterable, Optional, Protocol, final
 
 from overrides import override
 
-from ..base import Action, State, StateSpaceProblem
+from ..base import Action, Cost, State, StateSpaceProblem
 
 
 @final
@@ -25,17 +25,17 @@ class GridState(State):
 class GridAction(Action):
     move_direction: tuple[int, ...]
     name: Optional[str]
-    cost: int | float
+    cost: Cost
 
     def __init__(
         self,
         move_direction: tuple[int, ...],
         name: Optional[str] = None,
-        cost: int | float = 1,
+        cost: Cost = 1,
     ) -> None:
         self.move_direction: tuple[int, ...] = move_direction
         self.name: Optional[str] = name
-        self.cost: int | float = cost
+        self.cost: Cost = cost
 
     def __hash__(self) -> int:
         return hash(self.move_direction)
@@ -56,7 +56,7 @@ class GridAction(Action):
         return self.name if self.name else str(self)
 
     @override
-    def get_action_cost(self) -> int | float:
+    def get_action_cost(self) -> Cost:
         return self.cost
 
 
@@ -81,6 +81,7 @@ def four_directions_2d(state: GridState) -> Iterable[Action]:
     )
 
 
+# TODO: Implement for wall blocks.
 @final
 @dataclass(slots=True)
 class GridPathFinding(StateSpaceProblem):
@@ -175,10 +176,20 @@ class GridPathFinding(StateSpaceProblem):
         return GridState(position=next_position)
 
     @override
-    def get_action_cost(self, state: State, action: Action) -> int | float:
+    def get_action_cost(self, state: State, action: Action) -> Cost:
         if not isinstance(state, GridState):
             raise TypeError("State must be of type GridState")
         if not isinstance(action, GridAction):
             raise TypeError("Action must be of type GridAction")
 
         return action.get_action_cost()
+
+    @override
+    def heuristic(self, state: State) -> Cost:
+        if not isinstance(state, GridState):
+            raise TypeError("State must be of type GridState")
+
+        # TODO: Implement heuristic function.
+        # Manhattan distance heuristic.
+
+        return 0

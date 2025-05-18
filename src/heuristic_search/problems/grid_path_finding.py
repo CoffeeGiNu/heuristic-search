@@ -1,6 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable, Optional, Protocol, final
+from typing import Any, Callable, Iterable, Optional, Protocol, Sequence, final
 
+import matplotlib.pyplot as plt
+from matplotlib import patches
 from overrides import override
 
 from ..base import Action, Cost, State, StateSpaceProblem
@@ -81,24 +83,47 @@ def four_directions_2d(state: GridState) -> Iterable[Action]:
     )
 
 
+class GridMap(object):
+    """
+    A class representing a map for pathfinding.
+    """
+
+    shape: tuple[int, ...]
+    walls: set[tuple[int, ...]]
+
+    def __init__(
+        self,
+        shape: tuple[int, ...],
+        walls: Optional[set[tuple[int, ...]]] = None,
+    ) -> None:
+        self.shape: tuple[int, ...] = shape
+        self.walls: set[tuple[int, ...]] = walls if walls is not None else set()
+
+    def is_wall(self, position: tuple[int, ...]) -> bool:
+        return position in self.walls
+
+    def in_bounds(self, position: tuple[int, ...]) -> bool:
+        return all(0 <= position[i] < self.shape[i] for i in range(len(self.shape)))
+
+
 # TODO: Implement for wall blocks.
 @final
 @dataclass(slots=True)
 class GridPathFinding(StateSpaceProblem):
-    shape: tuple[int, ...]
+    grid_map: GridMap
     initial_position: tuple[int, ...]
     goal_position: tuple[int, ...]
     neighbor_strategy: NeighborStrategy
 
     def __init__(
         self,
-        shape: tuple[int, ...] = (3, 3),
-        initial_position: tuple[int, ...] = (0, 0),
-        goal_position: tuple[int, ...] = (2, 2),
+        grid_map: GridMap,
+        initial_position: tuple[int, ...],
+        goal_position: tuple[int, ...],
         actions: Optional[Iterable[Action]] = None,
         neighbor_strategy: Optional[NeighborStrategy] = None,
     ) -> None:
-        self.shape: tuple[int, ...] = shape
+        self.grid_map: GridMap = grid_map
         self.initial_position: tuple[int, ...] = initial_position
         self.goal_position: tuple[int, ...] = goal_position
 
@@ -149,9 +174,8 @@ class GridPathFinding(StateSpaceProblem):
         next_position: tuple[int, ...] = self._get_next_position(
             state=state, action=action
         )
-
-        return all(
-            self.shape[i] > next_position[i] >= 0 for i in range(len(self.shape))
+        return self.grid_map.in_bounds(next_position) and not self.grid_map.is_wall(
+            next_position
         )
 
     def _get_next_position(
@@ -189,7 +213,135 @@ class GridPathFinding(StateSpaceProblem):
         if not isinstance(state, GridState):
             raise TypeError("State must be of type GridState")
 
-        # TODO: Implement heuristic function.
-        # Manhattan distance heuristic.
+        return sum(
+            abs(state.position[i] - self.goal_position[i])
+            for i in range(len(state.position))
+        )
 
-        return 0
+
+def visualize_grid_path_with_walls(
+    grid_path_finding: GridPathFinding,
+    path_with_actions: Sequence[tuple[GridState, Optional[GridAction]]],
+    filename: str = "path.png",
+    *,
+    figsize: tuple[float, float] = (6, 6),
+) -> str:
+    """
+    Render the path and walls on a grid and save to an image file.
+    """
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.set_aspect("equal")
+    width, height = grid_path_finding.grid_map.shape
+
+    # invert y axis so (0,0) is top‑left like array indexing
+    ax.set_xlim(-0.5, width - 0.5)
+    ax.set_ylim(height - 0.5, -0.5)
+
+    # --- draw grid -----------------------------------------------------
+    for x in range(width + 1):
+        ax.axvline(x - 0.5, color="lightgray", linewidth=0.8, zorder=0)
+    for y in range(height + 1):
+        ax.axhline(y - 0.5, color="lightgray", linewidth=0.8, zorder=0)
+
+    # --- draw walls ----------------------------------------------------
+    for wx, wy in grid_path_finding.grid_map.walls:
+        ax.add_patch(
+            patches.Rectangle(
+                (wx - 0.5, wy - 0.5),
+                1,
+                1,
+                facecolor="black",
+                alpha=0.7,
+                edgecolor="black",
+                linewidth=1.0,
+                zorder=1,
+            )
+        )
+
+    # --- draw start & goal --------------------------------------------
+    sx, sy = grid_path_finding.initial_position
+    gx, gy = grid_path_finding.goal_position
+    ax.add_patch(
+        patches.Rectangle(
+            (sx - 0.5, sy - 0.5),
+            1,
+            1,
+            facecolor="#3cb44b",
+            alpha=0.4,
+            edgecolor="black",
+            linewidth=1.0,
+            label="Start",
+            zorder=2,
+        )
+    )
+    ax.add_patch(
+        patches.Rectangle(
+            (gx - 0.5, gy - 0.5),
+            1,
+            1,
+            facecolor="#e6194B",
+            alpha=0.4,
+            edgecolor="black",
+            linewidth=1.0,
+            label="Goal",
+            zorder=2,
+        )
+    )
+
+    # --- extract coordinates ------------------------------------------
+    states = [s for s, _ in path_with_actions]
+    xs = [s.position[0] for s in states]
+    ys = [s.position[1] for s in states]
+
+    # --- plot path line & markers -------------------------------------
+    if len(xs) > 1:
+        ax.plot(xs, ys, color="#4363d8", linewidth=2.0, zorder=3, label="Path")
+    ax.scatter(xs, ys, s=60, color="#4363d8", zorder=4)
+
+    # step numbers
+    for idx, (x, y) in enumerate(zip(xs, ys)):
+        ax.text(
+            x,
+            y,
+            str(idx),
+            color="white",
+            ha="center",
+            va="center",
+            fontsize=8,
+            fontweight="bold",
+            zorder=5,
+        )
+
+    # --- draw movement arrows -----------------------------------------
+    for (cur, _), (nxt, _) in zip(path_with_actions[:-1], path_with_actions[1:]):
+        dx = nxt.position[0] - cur.position[0]
+        dy = nxt.position[1] - cur.position[1]
+        mid_x = (cur.position[0] + nxt.position[0]) / 2
+        mid_y = (cur.position[1] + nxt.position[1]) / 2
+        ax.arrow(
+            mid_x - 0.25 * dx,
+            mid_y - 0.25 * dy,
+            0.5 * dx,
+            0.5 * dy,
+            head_width=0.2,
+            head_length=0.25,
+            fc="#4363d8",
+            ec="#4363d8",
+            linewidth=0.8,
+            zorder=4,
+            length_includes_head=True,
+        )
+
+    # --- labels & legend ----------------------------------------------
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_title("Grid path solution")
+    handles, labels = ax.get_legend_handles_labels()
+    if handles:
+        ax.legend(loc="upper right")
+
+    plt.tight_layout()
+    fig.savefig(filename, dpi=300)
+    plt.show()
+
+    return filename

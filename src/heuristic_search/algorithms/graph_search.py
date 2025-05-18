@@ -2,7 +2,7 @@ from typing import Callable, Optional
 
 from overrides import override
 
-from ..base import Action, Node, State, StateSpaceProblem
+from ..base import Action, Cost, Node, State, StateSpaceProblem
 from ..utils import SearchLogger
 
 
@@ -10,13 +10,13 @@ class GraphSearchNode(Node):
     def __init__(self, state: State) -> None:
         super().__init__()
         self.state = state
-        self.path_cost: int | float = 0
+        self.path_cost: Cost = 0
         self.depth: int = 0
         self.parent: Optional[Node] = None
 
     @override
-    def set_path_cost(self, cost: int | float) -> None:
-        self.path_cost: int | float = cost
+    def set_path_cost(self, cost: Cost) -> None:
+        self.path_cost: Cost = cost
 
     @override
     def set_depth(self, depth: int) -> None:
@@ -115,42 +115,3 @@ class GraphSearch(object):
         self.logger.stop()
         self.logger.print()
         return None
-
-
-class BreadthFirstSearch(GraphSearch):
-    def __init__(
-        self,
-        problem: StateSpaceProblem,
-        logger: SearchLogger,
-    ) -> None:
-        super().__init__(
-            problem=problem,
-            priority_function=lambda node: node.depth,
-            logger=logger,
-        )
-
-
-class DepthFirstSearch(GraphSearch):
-    def __init__(
-        self,
-        problem: StateSpaceProblem,
-        logger: SearchLogger,
-    ) -> None:
-        super().__init__(
-            problem=problem,
-            priority_function=lambda node: -node.depth,
-            logger=logger,
-        )
-
-
-class DijkstraSearch(GraphSearch):
-    def __init__(
-        self,
-        problem: StateSpaceProblem,
-        logger: SearchLogger,
-    ) -> None:
-        super().__init__(
-            problem=problem,
-            priority_function=lambda node: node.path_cost,
-            logger=logger,
-        )

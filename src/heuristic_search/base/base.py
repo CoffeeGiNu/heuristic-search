@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from os import path
-from typing import Optional
+from typing import Optional, TypeAlias
 
 from overrides import override
+
+Cost: TypeAlias = int | float
 
 
 class State(ABC):
@@ -19,7 +21,7 @@ class Action(ABC):
     Interface for an action.
     """
 
-    cost: int | float
+    cost: Cost
     name: Optional[str]
 
     @abstractmethod
@@ -29,7 +31,7 @@ class Action(ABC):
         """
 
     @abstractmethod
-    def get_action_cost(self) -> int | float:
+    def get_action_cost(self) -> Cost:
         """
         Returns the cost of the action.
         """
@@ -41,12 +43,12 @@ class Node(ABC):
     """
 
     state: State
-    path_cost: int | float
+    path_cost: Cost
     depth: int
     parent: Optional["Node"]
 
     @abstractmethod
-    def set_path_cost(self, cost: int | float) -> None:
+    def set_path_cost(self, cost: Cost) -> None:
         """
         Sets the path cost of the node.
         """
@@ -106,7 +108,13 @@ class StateSpaceProblem(ABC):
         """
 
     @abstractmethod
-    def get_action_cost(self, state: State, action: Action) -> int | float:
+    def get_action_cost(self, state: State, action: Action) -> Cost:
         """
         Returns the cost of applying the action to the state.
+        """
+
+    @abstractmethod
+    def heuristic(self, state: State) -> Cost:
+        """
+        Returns the heuristic value of the state.
         """

@@ -1,3 +1,3 @@
-from .base import Action, Node, State, StateSpaceProblem
+from .base import Action, Cost, Node, State, StateSpaceProblem
 
-__all__ = ["State", "Action", "StateSpaceProblem", "Node"]
+__all__ = ["State", "Action", "StateSpaceProblem", "Node", "Cost"]

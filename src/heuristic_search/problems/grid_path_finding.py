@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable, Optional, Protocol, Sequence, final
+from typing import Any, Callable, Iterable, Optional, Protocol, Sequence, cast, final
 
 import matplotlib.pyplot as plt
 from matplotlib import patches
@@ -105,6 +105,19 @@ class GridMap(object):
     def in_bounds(self, position: tuple[int, ...]) -> bool:
         return all(0 <= position[i] < self.shape[i] for i in range(len(self.shape)))
 
+    def map_to_cell(self) -> list[list[int]]:
+        # TODO: implement.
+        raise NotImplementedError("Not implemented")
+
+
+def manhattan_distance(
+    current_position: tuple[int, ...], goal_position: tuple[int, ...]
+) -> Cost:
+    return sum(
+        abs(current_position[i] - goal_position[i])
+        for i in range(len(current_position))
+    )
+
 
 # TODO: Implement for wall blocks.
 @final
@@ -114,6 +127,7 @@ class GridPathFinding(StateSpaceProblem):
     initial_position: tuple[int, ...]
     goal_position: tuple[int, ...]
     neighbor_strategy: NeighborStrategy
+    heuristic_function: Callable[..., Cost]
 
     def __init__(
         self,
@@ -121,11 +135,13 @@ class GridPathFinding(StateSpaceProblem):
         initial_position: tuple[int, ...],
         goal_position: tuple[int, ...],
         actions: Optional[Iterable[Action]] = None,
+        heuristic_function: Callable[..., Cost] = manhattan_distance,
         neighbor_strategy: Optional[NeighborStrategy] = None,
     ) -> None:
         self.grid_map: GridMap = grid_map
         self.initial_position: tuple[int, ...] = initial_position
         self.goal_position: tuple[int, ...] = goal_position
+        self.heuristic_function: Callable[..., Cost] = heuristic_function
 
         if actions is None and neighbor_strategy is None:
             raise ValueError("Either actions or neighbor_strategy must be provided")
@@ -212,16 +228,14 @@ class GridPathFinding(StateSpaceProblem):
     def heuristic(self, state: State) -> Cost:
         if not isinstance(state, GridState):
             raise TypeError("State must be of type GridState")
-
-        return sum(
-            abs(state.position[i] - self.goal_position[i])
-            for i in range(len(state.position))
+        return self.heuristic_function(
+            current_position=state.position, goal_position=self.goal_position
         )
 
 
 def visualize_grid_path_with_walls(
-    grid_path_finding: GridPathFinding,
-    path_with_actions: Sequence[tuple[GridState, Optional[GridAction]]],
+    grid_path_finding: StateSpaceProblem,
+    path_with_actions: Sequence[tuple[State, Optional[Action]]],
     filename: str = "path.png",
     *,
     figsize: tuple[float, float] = (6, 6),
@@ -229,6 +243,13 @@ def visualize_grid_path_with_walls(
     """
     Render the path and walls on a grid and save to an image file.
     """
+
+    grid_path_finding = cast(GridPathFinding, grid_path_finding)
+
+    path_with_actions = cast(
+        Sequence[tuple[GridState, Optional[GridAction]]], path_with_actions
+    )
+
     fig, ax = plt.subplots(figsize=figsize)
     ax.set_aspect("equal")
     width, height = grid_path_finding.grid_map.shape

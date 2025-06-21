@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from os import path
-from typing import Optional, TypeAlias
+from typing import Any, Optional, TypeAlias
 
 from overrides import override
 
@@ -90,6 +90,12 @@ class StateSpaceProblem(ABC):
         """
 
     @abstractmethod
+    def get_goal_state(self) -> State:
+        """
+        Returns the goal state of the problem.
+        """
+
+    @abstractmethod
     def is_goal_state(self, state: State) -> bool:
         """
         Returns True if the state is a goal state, False otherwise.
@@ -138,7 +144,7 @@ class OpenList(ABC):
         """
 
     @abstractmethod
-    def push(self, node: Node, priority: Cost) -> None:
+    def push(self, node: Node, priority: Any) -> None:
         """
         Pushes a node to the open list.
         """

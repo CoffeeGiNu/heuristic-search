@@ -35,6 +35,8 @@ class BucketPriorityQueue(OpenList):
         raise ValueError("Open list is empty.")
 
     def push(self, node: Node, priority: Cost) -> None:
+        # if isinstance(priority, tuple):
+        #     priority = int(sum(priority))
         if not isinstance(priority, int):
             raise ValueError(f"Priority {priority} is not an integer")
         if priority < self.min_priority or priority > self.max_priority:

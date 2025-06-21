@@ -147,7 +147,8 @@ class OptimizedGraphSearch(object):
         self.initial_state: State = problem.get_initial_state()
         self.initial_node: Node = GraphSearchNode(state=self.initial_state)
         self.open_list.push(
-            node=self.initial_node, priority=priority_function(self.initial_node)
+            node=self.initial_node,
+            priority=priority_function(self.initial_node),
         )
         self.closed_list.push(node=self.initial_node)
 
@@ -184,7 +185,8 @@ class OptimizedGraphSearch(object):
                     if not self.is_explored(node=next_node):
                         next_node.set_parent(parent=current_node)
                         self.open_list.push(
-                            node=next_node, priority=self.priority_function(next_node)
+                            node=next_node,
+                            priority=self.priority_function(next_node),
                         )
                         self.closed_list.push(node=next_node)
                         self.logger.generated += 1

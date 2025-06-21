@@ -172,6 +172,10 @@ class SlidingTile(StateSpaceProblem):
         return TileState(tiles=self.initial_tiles)
 
     @override
+    def get_goal_state(self) -> State:
+        return self.goal_state
+
+    @override
     def is_goal_state(self, state: State) -> bool:
         if not isinstance(state, TileState):
             raise TypeError("State must be a TileState")

@@ -1,6 +1,6 @@
-from ..base import StateSpaceProblem
+from ..base import ClosedList, OpenList, StateSpaceProblem
 from ..utils import SearchLogger
-from .graph_search import GraphSearch
+from .graph_search import GraphSearch, OptimizedGraphSearch
 
 
 class AStarSearch(GraphSearch):

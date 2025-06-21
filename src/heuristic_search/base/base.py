@@ -118,3 +118,51 @@ class StateSpaceProblem(ABC):
         """
         Returns the heuristic value of the state.
         """
+
+
+class OpenList(ABC):
+    """
+    Interface for an open list.
+    """
+
+    @abstractmethod
+    def __len__(self) -> int:
+        """
+        Returns the number of nodes in the open list.
+        """
+
+    @abstractmethod
+    def pop(self) -> Node:
+        """
+        Pops the node with the lowest cost from the open list.
+        """
+
+    @abstractmethod
+    def push(self, node: Node, priority: Cost) -> None:
+        """
+        Pushes a node to the open list.
+        """
+
+    @abstractmethod
+    def shrink(self, beam_width: Optional[int] = None) -> None:
+        """
+        Shrinks the open list, for limited memory search like beam search.
+        """
+
+
+class ClosedList(ABC):
+    """
+    Interface for a closed list.
+    """
+
+    @abstractmethod
+    def push(self, node: Node) -> None:
+        """
+        Pushes a node to the closed list.
+        """
+
+    @abstractmethod
+    def is_explored(self, node: Node) -> bool:
+        """
+        Returns True if the node is explored, False otherwise.
+        """

@@ -30,3 +30,19 @@ class WeightedAStarSearch(GraphSearch):
             + weight * problem.heuristic(node.state),
             logger=logger,
         )
+
+
+class TieBreakingAStarSearch(GraphSearch):
+    def __init__(
+        self,
+        problem: StateSpaceProblem,
+        logger: SearchLogger,
+    ) -> None:
+        super().__init__(
+            problem=problem,
+            priority_function=lambda node: (
+                node.path_cost + problem.heuristic(node.state),
+                problem.heuristic(node.state),
+            ),
+            logger=logger,
+        )

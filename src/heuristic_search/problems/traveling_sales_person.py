@@ -102,19 +102,23 @@ class TravelingSalesPerson(StateSpaceProblem):
     @override
     def get_initial_state(self) -> TravelingSalesPersonState:
         return TravelingSalesPersonState(
-            visited=set(), current_city=self.initial_position
+            visited={self.initial_position}, current_city=self.initial_position
         )
 
     @override
     def is_goal_state(self, state: State) -> bool:
         if not isinstance(state, TravelingSalesPersonState):
             raise TypeError(f"Expected TravelingSalesPersonState, got {type(state)}")
-        return set(self.cities) == state.visited
+        return (set(self.cities) == state.visited) and (
+            state.current_city == self.initial_position
+        )
 
     @override
     def get_available_actions(self, state: State) -> list[Action]:
         if not isinstance(state, TravelingSalesPersonState):
             raise TypeError(f"Expected TravelingSalesPersonState, got {type(state)}")
+        if set(self.cities) == state.visited:
+            return [TravelingSalesPersonAction(city=self.initial_position)]
         return [
             TravelingSalesPersonAction(city=city)
             for city in self.cities
@@ -140,6 +144,12 @@ class TravelingSalesPerson(StateSpaceProblem):
             raise TypeError(f"Expected TravelingSalesPersonAction, got {type(action)}")
 
         return self.distances[(state.current_city, action.city)]
+
+    @override
+    def get_goal_state(self) -> State:
+        return TravelingSalesPersonState(
+            visited=set(self.cities), current_city=self.initial_position
+        )
 
     @override
     def heuristic(self, state: State) -> Cost:

@@ -12,7 +12,7 @@ class CostLimitedDepthFirstSearch(GraphSearch):
         self,
         problem: StateSpaceProblem,
         logger: SearchLogger,
-        priority_function: Callable = lambda node: node.path_cost,
+        priority_function: Callable = lambda node: node.depth,
         cost_limit: Cost = float("inf"),
     ):
         super().__init__(
@@ -21,14 +21,13 @@ class CostLimitedDepthFirstSearch(GraphSearch):
             logger=logger,
         )
         self.cost_limit: Cost = cost_limit
+        self.candidate_cost_limit: Cost = float("inf")
 
     @override
     def solve(self):
         self.logger.start()
         while len(self.open_list) > 0:
-            self.open_list.sort(
-                key=lambda node: self.priority_function(node), reverse=True
-            )
+            self.open_list.sort(key=lambda node: node.depth, reverse=False)
             current_node: Node = self.open_list.pop()
             self.logger.expanded += 1
 
@@ -52,16 +51,33 @@ class CostLimitedDepthFirstSearch(GraphSearch):
                             state=current_node.state, action=action
                         )
                     )
-                    if (
-                        not self.is_explored(node=next_node)
-                        and self.priority_function(next_node) <= self.cost_limit
+                    priority: Cost = self.priority_function(next_node)
+                    if priority <= self.cost_limit and not self.is_explored(
+                        node=next_node
                     ):
                         next_node.set_parent(parent=current_node)
                         self.logger.generated += 1
                         self.open_list.append(next_node)
                         self.closed_list.add(next_node)
                     else:
+                        if self.cost_limit < priority < self.get_candidate_cost_limit():
+                            self.candidate_cost_limit = priority
                         self.logger.pruned += 1
         self.logger.stop()
         self.logger.print()
         return None
+
+    # TODO: この辺りの実装がこれで良いか要検討.
+    def update_cost_limit(self, cost_limit: Cost) -> None:
+        self.cost_limit = cost_limit
+        self.reset()
+
+    def get_candidate_cost_limit(self) -> Cost:
+        return self.candidate_cost_limit
+
+    def reset(self) -> None:
+        self.open_list.clear()
+        self.closed_list.clear()
+        self.open_list.append(self.initial_node)
+        self.closed_list.add(self.initial_node)
+        self.candidate_cost_limit = float("inf")

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Any, Callable, Iterable, Optional, Protocol, Sequence, cast, final
+from typing_extensions import override
 
 import matplotlib.pyplot as plt
 from matplotlib import patches
-from overrides import override
 
 from ..base import Action, Cost, State, StateSpaceProblem
 
@@ -39,6 +39,7 @@ class GridAction(Action):
         self.name: Optional[str] = name
         self.cost: Cost = cost
 
+    @override
     def __hash__(self) -> int:
         return hash(self.move_direction)
 

@@ -9,7 +9,7 @@ from ..utils import SearchLogger
 class GraphSearchNode(Node):
     def __init__(self, state: State) -> None:
         super().__init__()
-        self.state = state
+        self.state: State = state
         self.path_cost: Cost = 0
         self.depth: int = 0
         self.parent: Optional[Node] = None

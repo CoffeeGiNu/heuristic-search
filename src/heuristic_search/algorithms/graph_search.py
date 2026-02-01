@@ -12,7 +12,7 @@ class GraphSearchNode(Node):
         self.state: State = state
         self.path_cost: Cost = 0
         self.depth: int = 0
-        self.parent: Optional[Node] = None
+        self.parent: Node | None = None
 
     @override
     def set_path_cost(self, cost: Cost) -> None:
@@ -24,10 +24,10 @@ class GraphSearchNode(Node):
 
     @override
     def set_parent(self, parent: Node) -> None:
-        self.parent: Optional[Node] = parent
+        self.parent = parent
 
     @override
-    def get_parent(self) -> Optional[Node]:
+    def get_parent(self) -> Node | None:
         return self.parent
 
     @override

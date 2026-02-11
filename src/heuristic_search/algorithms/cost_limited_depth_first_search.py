@@ -14,7 +14,7 @@ class CostLimitedDepthFirstSearch(GraphSearch):
         logger: SearchLogger,
         priority_function: Callable = lambda node: node.depth,
         cost_limit: Cost = float("inf"),
-    ):
+    ) -> None:
         super().__init__(
             problem=problem,
             priority_function=priority_function,

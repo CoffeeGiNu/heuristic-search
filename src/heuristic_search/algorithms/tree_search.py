@@ -15,7 +15,7 @@ class TreeSearchNode(Node):
         self.state = state
         self.path_cost: Cost = 0
         self.depth: int = 0
-        self.parent: Optional[Node] = None
+        self.parent: Node | None = None
 
     @override
     def set_path_cost(self, cost: Cost) -> None:
@@ -27,7 +27,7 @@ class TreeSearchNode(Node):
 
     @override
     def set_parent(self, parent: Node) -> None:
-        self.parent: Optional[Node] = parent
+        self.parent: Node | None = parent
 
     @override
     def get_parent(self) -> Optional[Node]:
@@ -65,10 +65,10 @@ class TreeSearch(object):
         self.initial_state: State = problem.get_initial_state()
         self.initial_node: Node = TreeSearchNode(state=self.initial_state)
         self.open_list: list[Node] = [self.initial_node]
-        self.initial_node.set_path_cost(0)
-        self.initial_node.set_depth(0)
+        self.initial_node.set_path_cost(cost=0)
+        self.initial_node.set_depth(depth=0)
 
-    def solve(self) -> Optional[list[Node]]:
+    def solve(self) -> list[Node] | None:
         self.logger.start()
         while len(self.open_list) > 0:
             self.open_list.sort(

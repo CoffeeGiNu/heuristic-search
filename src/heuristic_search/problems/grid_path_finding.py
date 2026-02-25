@@ -13,9 +13,11 @@ from ..base import Action, Cost, State, StateSpaceProblem
 class GridState(State):
     position: tuple[int, ...]
 
+    @override
     def __hash__(self) -> int:
         return hash(self.position)
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, GridState):
             return False
@@ -261,7 +263,7 @@ def visualize_grid_path_with_walls(
 
     # --- draw grid -----------------------------------------------------
     for x in range(width + 1):
-        ax.axvline(x - 0.5, color="lightgray", linewidth=0.8, zorder=0)
+        ax.axvline(x - 0.5, color="lightgray", linewidth=0.8, zorder=0)  # type: ignore
     for y in range(height + 1):
         ax.axhline(y - 0.5, color="lightgray", linewidth=0.8, zorder=0)
 

@@ -34,11 +34,9 @@ class GraphSearchNode(Node):
     def get_path(self) -> list[Node]:
         current_node: Node | None = self
         paths: list[Node] = []
-
         while current_node is not None and hasattr(current_node, "parent"):
             paths.append(current_node)
             current_node = current_node.get_parent()
-
         return paths
 
 

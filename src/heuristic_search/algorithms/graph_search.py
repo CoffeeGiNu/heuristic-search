@@ -1,6 +1,6 @@
-from typing import Callable, Optional
+from typing import Callable
 
-from overrides import override
+from typing_extensions import override
 
 from ..base import Action, ClosedList, Cost, Node, OpenList, State, StateSpaceProblem
 from ..utils import SearchLogger
@@ -16,11 +16,11 @@ class GraphSearchNode(Node):
 
     @override
     def set_path_cost(self, cost: Cost) -> None:
-        self.path_cost: Cost = cost
+        self.path_cost = cost
 
     @override
     def set_depth(self, depth: int) -> None:
-        self.depth: int = depth
+        self.depth = depth
 
     @override
     def set_parent(self, parent: Node) -> None:
@@ -32,7 +32,7 @@ class GraphSearchNode(Node):
 
     @override
     def get_path(self) -> list[Node]:
-        current_node: Optional[Node] = self
+        current_node: Node | None = self
         paths: list[Node] = []
 
         while current_node is not None and hasattr(current_node, "parent"):

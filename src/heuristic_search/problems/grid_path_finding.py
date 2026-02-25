@@ -27,24 +27,21 @@ class GridState(State):
 @final
 @dataclass(slots=True)
 class GridAction(Action):
-    move_direction: tuple[int, ...]
-    name: Optional[str]
-    cost: Cost
-
     def __init__(
         self,
         move_direction: tuple[int, ...],
-        name: Optional[str] = None,
+        name: str | None = None,
         cost: Cost = 1,
     ) -> None:
         self.move_direction: tuple[int, ...] = move_direction
-        self.name: Optional[str] = name
+        self.name: str | None = name
         self.cost: Cost = cost
 
     @override
     def __hash__(self) -> int:
         return hash(self.move_direction)
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, GridAction):
             return False
@@ -53,6 +50,7 @@ class GridAction(Action):
             for i in range(len(self.move_direction))
         )
 
+    @override
     def __str__(self) -> str:
         return "move:(" + ", ".join(map(str, self.move_direction)) + ")"
 
@@ -73,7 +71,7 @@ class NeighborStrategy(Protocol):
         ...
 
 
-def four_directions_2d(state: GridState) -> Iterable[Action]:
+def four_directions_2d(state: GridState) -> Iterable[Action]:  # type: ignore
     """
     Returns the four directions (left, right, up, down)
     from the given state for 2d grid.

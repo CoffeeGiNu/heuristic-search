@@ -1,6 +1,4 @@
-from typing import Optional
-
-from overrides import override
+from typing_extensions import override
 
 from ..base import Action, Cost, Node, State, StateSpaceProblem
 from ..utils import SearchLogger
@@ -13,7 +11,7 @@ class BnBSearchNode(Node):
         self.state = state
         self.path_cost: Cost = 0
         self.depth: int = 0
-        self.parent: Optional[Node] = None
+        self.parent: Node | None = None
 
     @override
     def set_path_cost(self, cost: Cost) -> None:
@@ -25,15 +23,15 @@ class BnBSearchNode(Node):
 
     @override
     def set_parent(self, parent: Node) -> None:
-        self.parent: Optional[Node] = parent
+        self.parent: Node | None = parent
 
     @override
-    def get_parent(self) -> Optional[Node]:
+    def get_parent(self) -> Node | None:
         return self.parent
 
     @override
     def get_path(self) -> list[Node]:
-        current_node: Optional[Node] = self
+        current_node: Node | None = self
         paths: list[Node] = []
 
         while current_node is not None and hasattr(current_node, "parent"):
@@ -55,18 +53,18 @@ class BranchAndBoundRecursiveSearch(object):
         self.initial_state: State = problem.get_initial_state()
         self.initial_node: Node = BnBSearchNode(state=self.initial_state)
         self.current_best_cost: Cost = float("inf")
-        self.current_best_path: Optional[list[Node]] = None
+        self.current_best_path: list[Node] | None = None
         self.initial_node.set_path_cost(cost=0)
         self.initial_node.set_depth(depth=0)
 
-    def solve(self) -> Optional[list[Node]]:
+    def solve(self) -> list[Node] | None:
         self.logger.start()
         path, cost = self.recursive_search(current_node=self.initial_node)
         self.logger.stop()
         self.logger.print()
         return path
 
-    def recursive_search(self, current_node: Node) -> tuple[Optional[list[Node]], Cost]:
+    def recursive_search(self, current_node: Node) -> tuple[list[Node] | None, Cost]:
         self.logger.expanded += 1
         if self.problem.is_goal_state(state=current_node.state):
             if current_node.path_cost < self.current_best_cost:
